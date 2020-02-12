@@ -1,72 +1,80 @@
-<template>
-  <div class="container">
-    <div>
-      <logo />
-      <h1 class="title">
-        nuxt-graphql-jwt-auth-demo
-      </h1>
-      <h2 class="subtitle">
-        nuxt graphql jwt auth demo
-      </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey"
-        >
-          GitHub
-        </a>
-      </div>
-    </div>
-  </div>
+<template lang="pug">
+  .container
+    .row.mt-3
+      .col-12
+        h1 nuxt graphql jwt auth demo
+    .row.mt-3
+      .col-12
+        h4 try it out
+        .links
+          b-button.mr-3(
+            @click="login"
+          ) Login
+          b-button.mr-3(
+            @click="sendQuery"
+          ) Send Query
+          b-button(
+            @click="logout"
+          ) Logout
+    .row.mt-3
+      .col-12
+        h4 state
+        table.table
+          tr
+            th Path
+            th Value
+          tr
+            td vm.$store.state.auth.loggedIn
+            td {{ $store.state.auth.loggedIn }}
+          tr
+            td vm.$store.state.auth.user
+            td
+              pre {{ JSON.stringify($store.state.auth.user, null, 2) }}
+    .row.mt-3
+      .col-12
+        h4 details
+        readme
+
+        vue-snotify
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
+import Readme from '../components/Readme'
+import NoOpQ from './NoOpQ'
 
 export default {
+  auth: false,
   components: {
-    Logo
+    readme: Readme
+  },
+  methods: {
+    async login () {
+      await this.$auth.loginWith('graphql', {
+        email: 'test@email.com',
+        password: 'password'
+      })
+    },
+    logout () {
+      this.$auth.logout()
+    },
+    async sendQuery () {
+      try {
+        await this.$apollo.query({
+          query: NoOpQ,
+          fetchPolicy: 'network-only'
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    }
   }
 }
 </script>
 
 <style>
-.container {
-  margin: 0 auto;
-  min-height: 100vh;
+.links {
   display: flex;
   justify-content: center;
   align-items: center;
-  text-align: center;
-}
-
-.title {
-  font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-
-.links {
-  padding-top: 15px;
 }
 </style>

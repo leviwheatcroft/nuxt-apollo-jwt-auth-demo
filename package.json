@@ -1,7 +1,7 @@
 {
-  "name": "nuxt-graphql-jwt-auth-demo",
+  "name": "nuxt-apollo-jwt-auth-demo",
   "version": "1.0.0",
-  "description": "nuxt graphql jwt auth demo",
+  "description": "Nuxt Apollo JWT Auth Demo",
   "author": "Levi Wheatcroft",
   "private": true,
   "scripts": {
@@ -12,19 +12,30 @@
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
   },
   "dependencies": {
-    "nuxt": "^2.0.0",
+    "@nuxtjs/apollo": "^4.0.0-rc19",
+    "@nuxtjs/auth": "^4.8.5",
+    "@nuxtjs/dotenv": "^1.4.0",
+    "apollo-errors": "^1.9.0",
+    "apollo-server-express": "^2.10.0",
+    "bootstrap": "^4.1.3",
+    "bootstrap-vue": "^2.0.0",
     "cross-env": "^5.2.0",
     "express": "^4.16.4",
-    "bootstrap-vue": "^2.0.0",
-    "bootstrap": "^4.1.3",
-    "@nuxtjs/dotenv": "^1.4.0"
+    "graphql-middleware": "^4.0.2",
+    "graphql-tools": "^4.0.6",
+    "jsonwebtoken": "^8.5.1",
+    "marked": "^0.8.0",
+    "nuxt": "^2.0.0",
+    "pug": "^2.0.4",
+    "pug-plain-loader": "^1.0.0",
+    "vue-snotify": "^3.2.1"
   },
   "devDependencies": {
-    "nodemon": "^1.18.9",
     "@nuxtjs/eslint-config": "^1.0.1",
     "@nuxtjs/eslint-module": "^1.0.0",
     "babel-eslint": "^10.0.1",
     "eslint": "^6.1.0",
-    "eslint-plugin-nuxt": ">=0.4.2"
+    "eslint-plugin-nuxt": ">=0.4.2",
+    "nodemon": "^1.18.9"
   }
 }

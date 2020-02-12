@@ -1,3 +1,6 @@
+const UserQ = require('./plugins/auth/UserQ')
+const UserLoginM = require('./plugins/auth/UserLoginM')
+const UserRefreshM = require('./plugins/auth/UserRefreshM')
 
 module.exports = {
   mode: 'spa',
@@ -23,11 +26,14 @@ module.exports = {
   ** Global CSS
   */
   css: [
+    'vue-snotify/styles/material.css',
+    '@assets/markdown.css'
   ],
   /*
   ** Plugins to load before mounting the App
   */
   plugins: [
+    '~/plugins/snotify'
   ],
   /*
   ** Nuxt.js dev-modules
@@ -36,6 +42,9 @@ module.exports = {
     // Doc: https://github.com/nuxt-community/eslint-module
     '@nuxtjs/eslint-module'
   ],
+  router: {
+    middleware: ['auth']
+  },
   /*
   ** Nuxt.js modules
   */
@@ -43,7 +52,11 @@ module.exports = {
     // Doc: https://bootstrap-vue.js.org
     'bootstrap-vue/nuxt',
     // Doc: https://github.com/nuxt-community/dotenv-module
-    '@nuxtjs/dotenv'
+    '@nuxtjs/dotenv',
+    // Doc: https://github.com/nuxt-community/apollo-module
+    '@nuxtjs/apollo',
+    // Doc: https://github.com/nuxt-community/auth-module
+    '@nuxtjs/auth'
   ],
   /*
   ** Build configuration
@@ -53,6 +66,25 @@ module.exports = {
     ** You can extend webpack config here
     */
     extend (config, ctx) {
+    }
+  },
+  apollo: {
+    clientConfigs: {
+      default: '~/plugins/apollo/apolloConfig.js'
+    }
+  },
+  auth: {
+    defaultStrategy: 'graphql',
+    strategies: {
+      graphql: {
+        _name: 'graphql',
+        _scheme: '~/plugins/auth/graphql.js',
+        gql: {
+          UserQ,
+          UserLoginM,
+          UserRefreshM
+        }
+      }
     }
   }
 }
