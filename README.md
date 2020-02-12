@@ -38,6 +38,10 @@ Usually you'd need to provide a username and password, but we're not concerned w
 
 The client stores these tokens for later user. Presently this repo uses local storage. If you need SSR then you'll need to look into using cookies instead so the server has the tokens when it's trying to render. The auth module's `local` scheme demonstrates how to store the tokens as cookies.
 
+### Why such a quick timeout?
+
+For this demo tokens time out very quickly so you can play around with the different states in real time. You can change the time out duration in .env.
+
 ## Send Query
 
 The nuxt apollo module will attach the `accessToken` to any queries or mutations as an `Authorization` http request header.

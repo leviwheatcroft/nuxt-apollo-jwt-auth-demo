@@ -11,7 +11,8 @@ module.exports = gql`
 
   type Query {
     UserQ: User!
-    NoOpQ: Boolean!
+    NoOpNonAdminQ: Boolean!
+    NoOpAdminQ: Boolean!
   }
   type Mutation {
     UserLoginM(

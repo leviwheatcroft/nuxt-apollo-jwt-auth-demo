@@ -10,10 +10,27 @@ const {
 const {
   AUTH_TIMEOUT
 } = require('./errors')
+const {
+  omit
+} = require('lodash')
 
-const mockUser = {
-  _id: 'someUserId',
-  email: 'demo@email.com'
+const users = {
+  ordinaryUser: {
+    username: 'ordinaryUser',
+    email: 'ordinaryUser@gmail.com',
+    grants: {
+      basic: true,
+      admin: false
+    }
+  },
+  adminUser: {
+    username: 'adminUser',
+    email: 'adminUser@gmail.com',
+    grants: {
+      basic: true,
+      admin: true
+    }
+  }
 }
 
 const {
@@ -34,18 +51,22 @@ module.exports = {
     parseLiteral: value => jwt.verify(value, JWT_SECRET)
   }),
   Query: {
-    UserQ: () => mockUser,
-    NoOpQ: () => true
+    UserQ: (_, { username }) => {
+      return omit(users[username], 'grants')
+    },
+    NoOpNonAdminQ: () => true,
+    NoOpAdminQ: () => true
   },
   Mutation: {
-    UserLoginM: () => getTokens(mockUser),
-    UserRefreshM: (root, query) => {
+    UserLoginM: (_, { username }) => {
+      getTokens(users.username)
+    },
+    UserRefreshM: (_, query) => {
       const {
-        refreshToken: { expiresAt }
+        refreshToken: { expiresAt, username }
       } = query
-      console.log(query)
       if (expiresAt < Date.now()) { throw AUTH_TIMEOUT() }
-      return getTokens(mockUser)
+      return getTokens(users[username])
     }
   }
 }

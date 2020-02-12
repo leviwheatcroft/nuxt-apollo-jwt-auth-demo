@@ -7,13 +7,35 @@
       .col-12
         h4 try it out
         .links
-          b-button.mr-3(
-            @click="login"
-          ) Login
-          b-button.mr-3(
-            @click="sendQuery"
-          ) Send Query
+          b-dropdown.mr-3(
+            :disabled="$store.state.auth.loggedIn"
+            variant="primary"
+            split
+            @click="loginUser"
+            text="Login"
+          )
+            b-dropdown-item(
+              @click="loginUser"
+            ) ... as user
+            b-dropdown-item(
+              @click="loginAdmin"
+            ) ... as admin
+          b-dropdown.mr-3(
+            :disabled="!$store.state.auth.loggedIn"
+            variant="primary"
+            split
+            @click="queryAdminNotRequired"
+            text="Send Query"
+          )
+            b-dropdown-item(
+              @click="queryAdminRequired"
+            ) ... normal query
+            b-dropdown-item(
+              @click="queryAdminRequired"
+            ) ... privileged query
           b-button(
+            variant="primary"
+            :disabled="!$store.state.auth.loggedIn"
             @click="logout"
           ) Logout
     .row.mt-3
@@ -21,11 +43,25 @@
         h4 state
         table.table
           tr
-            th Path
-            th Value
+            th.col-3 Path
+            th.col-9 Value
           tr
             td vm.$store.state.auth.loggedIn
             td {{ $store.state.auth.loggedIn }}
+          tr
+            td vm.$store.state.auth.accessTokenExpiresAt
+            td.
+              {{
+                $moment($store.state.auth.accessTokenExpiresAt)
+                  .format('HH:MM:SS')
+              }}
+          tr
+            td vm.$store.state.auth.refreshTokenExpiresAt
+            td.
+              {{
+                $moment($store.state.auth.refreshTokenExpiresAt)
+                  .format('HH:MM:SS')
+              }}
           tr
             td vm.$store.state.auth.user
             td
@@ -48,7 +84,13 @@ export default {
     readme: Readme
   },
   methods: {
-    async login () {
+    async loginUser () {
+      await this.$auth.loginWith('graphql', {
+        email: 'test@email.com',
+        password: 'password'
+      })
+    },
+    async loginAdmin () {
       await this.$auth.loginWith('graphql', {
         email: 'test@email.com',
         password: 'password'
@@ -57,7 +99,17 @@ export default {
     logout () {
       this.$auth.logout()
     },
-    async sendQuery () {
+    async queryAdminNotRequired () {
+      try {
+        await this.$apollo.query({
+          query: NoOpQ,
+          fetchPolicy: 'network-only'
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async queryAdminRequired () {
       try {
         await this.$apollo.query({
           query: NoOpQ,
@@ -67,11 +119,17 @@ export default {
         console.log(error)
       }
     }
+
   }
 }
 </script>
 
 <style>
+.btn-primary:disabled,
+.btn-primary.disabled {
+  border-color: #b0b0b0;
+  background-color: #b0b0b0;
+}
 .links {
   display: flex;
   justify-content: center;

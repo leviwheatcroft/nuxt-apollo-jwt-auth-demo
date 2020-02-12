@@ -1,3 +1,6 @@
+import {
+  decode
+} from 'jsonwebtoken'
 const accessTimeout = process.env.JWT_ACCESS_TOKEN_EXPIRY
 const refreshTimeout = process.env.JWT_REFRESH_TOKEN_EXPIRY
 
@@ -11,8 +14,19 @@ export default class GraphQLScheme {
 
   _setTokens (tokens) {
     const { accessToken, refreshToken } = tokens
+
+    console.log(decode(accessToken))
     this.$storage.setLocalStorage('accessToken', accessToken)
+    this.$storage.setState(
+      'accessTokenExpiresAt',
+      decode(accessToken).expiresAt
+    )
+
     this.$storage.setLocalStorage('refreshToken', refreshToken)
+    this.$storage.setState(
+      'refreshTokenExpiresAt',
+      decode(refreshToken).expiresAt
+    )
     this.$storage.setState('loggedIn', true)
     const $snotify = this.$auth.ctx.app.$snotify
     $snotify.clear()
@@ -65,6 +79,9 @@ export default class GraphQLScheme {
   }
 
   async fetchUser (endpoint) {
+    if (!this.$storage.getState('loggedIn')) {
+      return
+    }
     const apollo = this.$auth.ctx.app.apolloProvider.defaultClient
     // don't trap errors here, they will be thrown to the component
     const user = await apollo.query({

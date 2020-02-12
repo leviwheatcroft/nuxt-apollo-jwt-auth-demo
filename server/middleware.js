@@ -1,6 +1,7 @@
 const {
   AUTH_FAILED,
-  AUTH_TIMEOUT
+  AUTH_TIMEOUT,
+  UNAUTHORIZED
 } = require('./errors')
 const jwt = require('jsonwebtoken')
 
@@ -32,10 +33,28 @@ async function authentication (resolve, root, args, ctx, info) {
   return result
 }
 
-// specify the queries / mutations we want to require authentication
+async function authorization (resolve, root, args, ctx, info) {
+  if (!ctx.jwt.grants.admin) {
+    throw new UNAUTHORIZED()
+  }
+
+  const result = await resolve(root, args, ctx, info)
+
+  return result
+}
+
+// specify the queries / mutations we want to apply middleware to
 module.exports = {
-  Query: {
-    NoOpQ: authentication,
-    UserQ: authentication
+  authentication: {
+    Query: {
+      NoOpNonAdminQ: authentication,
+      NoOpAdminQ: authentication,
+      UserQ: authentication
+    }
+  },
+  authorization: {
+    Query: {
+      NoOpAdminQ: authorization
+    }
   }
 }

@@ -8,3 +8,6 @@ module.exports.AUTH_FAILED = createError('AUTH_FAILED', {
 module.exports.AUTH_TIMEOUT = createError('AUTH_TIMEOUT', {
   message: 'auth failed - token expired'
 })
+module.exports.UNAUTHORIZED = createError('UNAUTHORIZED', {
+  message: 'unauthorized to perform action'
+})
