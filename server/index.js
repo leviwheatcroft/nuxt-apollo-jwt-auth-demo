@@ -15,7 +15,10 @@ const app = express()
 
 const typeDefs = require('./typeDefs')
 const resolvers = require('./resolvers')
-const middleware = require('./middleware')
+const {
+  authentication,
+  authorization
+} = require('./middleware')
 const {
   formatError
 } = require('apollo-errors')
@@ -41,7 +44,8 @@ async function start () {
   // this setup is specific to graphql-middleware
   const schema = applyMiddleware(
     makeExecutableSchema({ typeDefs, resolvers }),
-    middleware
+    authentication,
+    authorization
   )
 
   // need access to the request in context so the auth middleware can read

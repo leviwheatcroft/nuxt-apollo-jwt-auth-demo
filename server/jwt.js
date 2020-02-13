@@ -9,13 +9,15 @@ const JWT_REFRESH_TOKEN_EXPIRY = process.env.JWT_REFRESH_TOKEN_EXPIRY
 
 function getAccessToken (user) {
   return {
-    userId: user._id,
+    username: user.username,
+    grants: user.grants,
     expiresAt: Date.now() + parseInt(JWT_ACCESS_TOKEN_EXPIRY)
   }
 }
 function getRefreshToken (user) {
   return {
-    userId: user._id,
+    username: user.username,
+    grants: user.grants,
     expiresAt: Date.now() + parseInt(JWT_REFRESH_TOKEN_EXPIRY)
   }
 }

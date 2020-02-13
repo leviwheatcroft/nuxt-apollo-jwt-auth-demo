@@ -22,7 +22,6 @@ export default function getRefreshAuthTokenLink (ctx, options) {
     response,
     forward
   }) => {
-    console.log('link')
     const {
       app: {
         // apolloProvider: { defaultClient: $apollo },
@@ -34,10 +33,9 @@ export default function getRefreshAuthTokenLink (ctx, options) {
     // eslint-disable-next-line require-await
     return new Observable(async (observer) => {
       if (graphQLErrors) {
-        graphQLErrors.map(async ({ name }, index) => {
-          console.log(name)
+        graphQLErrors.map(async ({ name, handled }, index) => {
           switch (name) {
-            case 'AUTH_TIMEOUT': {
+            case 'AUTH_ACCESS_TIMEOUT': {
               const retryRequest = () => {
                 const authorization =
                   `Bearer ${$auth.$storage.getLocalStorage('accessToken')}`
@@ -67,10 +65,9 @@ export default function getRefreshAuthTokenLink (ctx, options) {
                   tokenSubscribers = []
 
                   return retryRequest()
-                } catch (e) {
-                  onTokenRefreshed(
-                    new Error('Unable to refresh access token')
-                  )
+                } catch (error) {
+                  error.handled = true
+                  onTokenRefreshed(error)
 
                   tokenSubscribers = []
                   isFetchingToken = false
@@ -88,10 +85,16 @@ export default function getRefreshAuthTokenLink (ctx, options) {
 
               return tokenSubscriber
             }
+            case 'AUTH_REFRESH_TIMEOUT': {
+              if (!handled)
+                $auth.strategy.logout('refresh token expired')
+              response.errors = undefined
+              return observer.next(response)
+            }
             case 'AUTH_FAILED': {
               $snotify.add($snotify.info(
-                'You\'ve been logged out. You\'ll need to log in again',
-                'Authentication Failed',
+                'You\'ve been logged out (no access / refresh token).',
+                'Logged Out',
                 { timeout: 10000 }
               ))
               response.errors = undefined

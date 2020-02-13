@@ -4,7 +4,7 @@
       .col-12
         h1 nuxt graphql jwt auth demo
     .row.mt-3
-      .col-12
+      .col-4
         h4 try it out
         .links
           b-dropdown.mr-3(
@@ -38,8 +38,7 @@
             :disabled="!$store.state.auth.loggedIn"
             @click="logout"
           ) Logout
-    .row.mt-3
-      .col-12
+      .col-8
         h4 state
         table.table
           tr
@@ -50,18 +49,10 @@
             td {{ $store.state.auth.loggedIn }}
           tr
             td vm.$store.state.auth.accessTokenExpiresAt
-            td.
-              {{
-                $moment($store.state.auth.accessTokenExpiresAt)
-                  .format('HH:MM:SS')
-              }}
+            td {{ accessTokenExpiresAt }}
           tr
             td vm.$store.state.auth.refreshTokenExpiresAt
-            td.
-              {{
-                $moment($store.state.auth.refreshTokenExpiresAt)
-                  .format('HH:MM:SS')
-              }}
+            td {{ refreshTokenExpiresAt }}
           tr
             td vm.$store.state.auth.user
             td
@@ -75,48 +66,67 @@
 </template>
 
 <script>
+import moment from 'moment'
 import Readme from '../components/Readme'
-import NoOpQ from './NoOpQ'
+import NoOpAdminQ from './NoOpAdminQ'
+import NoOpNonAdminQ from './NoOpNonAdminQ'
 
 export default {
   auth: false,
   components: {
     readme: Readme
   },
+  computed: {
+    accessTokenExpiresAt () {
+      const expiry = this.$store.state.auth.accessTokenExpiresAt
+      if (!expiry) return 'null'
+      return moment(expiry).format('HH:mm:ss')
+    },
+    refreshTokenExpiresAt () {
+      const expiry = this.$store.state.auth.refreshTokenExpiresAt
+      if (!expiry) return 'null'
+      return moment(expiry).format('HH:mm:ss')
+    }
+  },
   methods: {
     async loginUser () {
       await this.$auth.loginWith('graphql', {
-        email: 'test@email.com',
+        username: 'ordinaryUser',
         password: 'password'
       })
     },
     async loginAdmin () {
       await this.$auth.loginWith('graphql', {
-        email: 'test@email.com',
+        username: 'adminUser',
         password: 'password'
       })
     },
     logout () {
-      this.$auth.logout()
+      this.$auth.logout('user requested')
     },
     async queryAdminNotRequired () {
       try {
         await this.$apollo.query({
-          query: NoOpQ,
+          query: NoOpNonAdminQ,
           fetchPolicy: 'network-only'
         })
       } catch (error) {
-        console.log(error)
+        console.error(error)
       }
     },
     async queryAdminRequired () {
       try {
         await this.$apollo.query({
-          query: NoOpQ,
+          query: NoOpAdminQ,
           fetchPolicy: 'network-only'
         })
       } catch (error) {
-        console.log(error)
+        if (error.name === 'UNAUTHORIZED') {
+          this.$snotify('warn', 'Only admins can do that', 'Unauthorized')
+        } else {
+          debugger
+          console.log(error)
+        }
       }
     }
 

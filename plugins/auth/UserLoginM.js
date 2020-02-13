@@ -1,11 +1,11 @@
 const gql = require('graphql-tag')
 module.exports = gql`
   mutation UserLogin (
-    $email: String!
+    $username: String!
     $password: String!
   ) {
     tokens: UserLoginM(
-      email: $email
+      username: $username
       password: $password
     ) {
       accessToken

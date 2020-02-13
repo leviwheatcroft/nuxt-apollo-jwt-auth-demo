@@ -8,11 +8,8 @@ const {
   getTokens
 } = require('./jwt')
 const {
-  AUTH_TIMEOUT
+  AUTH_REFRESH_TIMEOUT
 } = require('./errors')
-const {
-  omit
-} = require('lodash')
 
 const users = {
   ordinaryUser: {
@@ -51,21 +48,24 @@ module.exports = {
     parseLiteral: value => jwt.verify(value, JWT_SECRET)
   }),
   Query: {
-    UserQ: (_, { username }) => {
-      return omit(users[username], 'grants')
+    UserQ: (_, __, ctx) => {
+      const {
+        jwt: { username }
+      } = ctx
+      return users[username]
     },
     NoOpNonAdminQ: () => true,
     NoOpAdminQ: () => true
   },
   Mutation: {
     UserLoginM: (_, { username }) => {
-      getTokens(users.username)
+      return getTokens(users[username])
     },
     UserRefreshM: (_, query) => {
       const {
         refreshToken: { expiresAt, username }
       } = query
-      if (expiresAt < Date.now()) { throw AUTH_TIMEOUT() }
+      if (expiresAt < Date.now()) { throw new AUTH_REFRESH_TIMEOUT() }
       return getTokens(users[username])
     }
   }

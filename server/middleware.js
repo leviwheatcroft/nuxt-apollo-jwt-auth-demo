@@ -1,9 +1,9 @@
+const jwt = require('jsonwebtoken')
 const {
   AUTH_FAILED,
-  AUTH_TIMEOUT,
+  AUTH_ACCESS_TIMEOUT,
   UNAUTHORIZED
 } = require('./errors')
-const jwt = require('jsonwebtoken')
 
 const {
   JWT_SECRET
@@ -24,7 +24,7 @@ async function authentication (resolve, root, args, ctx, info) {
     throw new AUTH_FAILED()
   }
   if (ctx.jwt.expiresAt < Date.now()) {
-    throw new AUTH_TIMEOUT()
+    throw new AUTH_ACCESS_TIMEOUT()
   }
 
   // run the actual query, see graphql-middleware
@@ -34,6 +34,7 @@ async function authentication (resolve, root, args, ctx, info) {
 }
 
 async function authorization (resolve, root, args, ctx, info) {
+  console.log(ctx.jwt)
   if (!ctx.jwt.grants.admin) {
     throw new UNAUTHORIZED()
   }

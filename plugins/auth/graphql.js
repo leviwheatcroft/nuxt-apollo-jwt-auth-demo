@@ -15,7 +15,6 @@ export default class GraphQLScheme {
   _setTokens (tokens) {
     const { accessToken, refreshToken } = tokens
 
-    console.log(decode(accessToken))
     this.$storage.setLocalStorage('accessToken', accessToken)
     this.$storage.setState(
       'accessTokenExpiresAt',
@@ -38,17 +37,23 @@ export default class GraphQLScheme {
     })
   }
 
-  _clearTokens () {
+  _clearTokens (reason) {
     this.$storage.removeLocalStorage('accessToken')
     this.$storage.removeLocalStorage('refreshToken')
     this.$storage.setState('loggedIn', false)
+    const $snotify = this.$auth.ctx.app.$snotify
+    $snotify.clear()
+    $snotify.info(`You've been logged out. (${reason})`, 'Logged Out', {
+      progress: false,
+      timeout: accessTimeout
+    })
   }
 
   mounted () {
     return this.$auth.fetchUserOnce()
   }
 
-  async login ({ email, password }) {
+  async login (variables) {
     // clear out any old tokens
     this._clearTokens()
 
@@ -57,7 +62,7 @@ export default class GraphQLScheme {
     // don't trap errors here, they will be thrown to the component
     const { data: { tokens } } = await apollo.mutate({
       mutation: this.gql.UserLoginM,
-      variables: { email, password }
+      variables
     })
     // debugger
 
@@ -91,8 +96,8 @@ export default class GraphQLScheme {
     this.$storage.setState('user', user)
   }
 
-  logout (endpoint) {
+  logout (reason) {
     // no need to notify the server that we're logging out
-    this._clearTokens()
+    this._clearTokens(reason)
   }
 }
