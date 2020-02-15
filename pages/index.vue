@@ -28,7 +28,7 @@
             text="Send Query"
           )
             b-dropdown-item(
-              @click="queryAdminRequired"
+              @click="queryAdminNotRequired"
             ) ... normal query
             b-dropdown-item(
               @click="queryAdminRequired"
@@ -38,25 +38,6 @@
             :disabled="!$store.state.auth.loggedIn"
             @click="logout"
           ) Logout
-      .col-8
-        h4 state
-        table.table
-          tr
-            th.col-3 Path
-            th.col-9 Value
-          tr
-            td vm.$store.state.auth.loggedIn
-            td {{ $store.state.auth.loggedIn }}
-          tr
-            td vm.$store.state.auth.accessTokenExpiresAt
-            td {{ accessTokenExpiresAt }}
-          tr
-            td vm.$store.state.auth.refreshTokenExpiresAt
-            td {{ refreshTokenExpiresAt }}
-          tr
-            td vm.$store.state.auth.user
-            td
-              pre {{ JSON.stringify($store.state.auth.user, null, 2) }}
     .row.mt-3
       .col-12
         h4 details
@@ -66,7 +47,6 @@
 </template>
 
 <script>
-import moment from 'moment'
 import Readme from '../components/Readme'
 import NoOpAdminQ from './NoOpAdminQ'
 import NoOpNonAdminQ from './NoOpNonAdminQ'
@@ -75,18 +55,6 @@ export default {
   auth: false,
   components: {
     readme: Readme
-  },
-  computed: {
-    accessTokenExpiresAt () {
-      const expiry = this.$store.state.auth.accessTokenExpiresAt
-      if (!expiry) return 'null'
-      return moment(expiry).format('HH:mm:ss')
-    },
-    refreshTokenExpiresAt () {
-      const expiry = this.$store.state.auth.refreshTokenExpiresAt
-      if (!expiry) return 'null'
-      return moment(expiry).format('HH:mm:ss')
-    }
   },
   methods: {
     async loginUser () {
@@ -105,31 +73,21 @@ export default {
       this.$auth.logout('user requested')
     },
     async queryAdminNotRequired () {
-      try {
-        await this.$apollo.query({
-          query: NoOpNonAdminQ,
-          fetchPolicy: 'network-only'
-        })
-      } catch (error) {
-        console.error(error)
-      }
+      const { errors } = await this.$apollo.query({
+        query: NoOpNonAdminQ,
+        fetchPolicy: 'network-only'
+      })
+      if (errors) return
+      this.$snotify.success('Successful query (admin not required)')
     },
     async queryAdminRequired () {
-      try {
-        await this.$apollo.query({
-          query: NoOpAdminQ,
-          fetchPolicy: 'network-only'
-        })
-      } catch (error) {
-        if (error.name === 'UNAUTHORIZED') {
-          this.$snotify('warn', 'Only admins can do that', 'Unauthorized')
-        } else {
-          debugger
-          console.log(error)
-        }
-      }
+      const { errors } = await this.$apollo.query({
+        query: NoOpAdminQ,
+        fetchPolicy: 'network-only'
+      })
+      if (errors) return
+      this.$snotify.success('Successful query (admin required)')
     }
-
   }
 }
 </script>
@@ -144,5 +102,11 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+pre {
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
 }
 </style>

@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken')
 const {
   AUTH_FAILED,
   AUTH_ACCESS_TIMEOUT,
   UNAUTHORIZED
 } = require('./errors')
+const jwt = require('jsonwebtoken')
 
 const {
   JWT_SECRET
@@ -34,7 +34,6 @@ async function authentication (resolve, root, args, ctx, info) {
 }
 
 async function authorization (resolve, root, args, ctx, info) {
-  console.log(ctx.jwt)
   if (!ctx.jwt.grants.admin) {
     throw new UNAUTHORIZED()
   }

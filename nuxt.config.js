@@ -73,6 +73,14 @@ module.exports = {
     clientConfigs: {
       default: '~/plugins/apollo/apolloConfig.js'
     }
+    // defaultOptions: {
+    //   $query: {
+    //     errorPolicy: 'all'
+    //   },
+    //   query: { error: '~/plugins/apollo/errorHandler.js' },
+    //   mutation: { error: '~/plugins/apollo/errorHandler.js' }
+    // },
+    // errorHandler: '~/plugins/apollo/errorHandler.js'
   },
   auth: {
     defaultStrategy: 'graphql',

@@ -30,10 +30,12 @@ export default class GraphQLScheme {
     const $snotify = this.$auth.ctx.app.$snotify
     $snotify.clear()
     $snotify.info('Will Timeout...', 'accessToken', {
-      timeout: accessTimeout
+      timeout: accessTimeout,
+      showProgressBar: true
     })
     $snotify.info('Will Timeout...', 'refreshToken', {
-      timeout: refreshTimeout
+      timeout: refreshTimeout,
+      showProgressBar: true
     })
   }
 
@@ -43,6 +45,7 @@ export default class GraphQLScheme {
     this.$storage.setState('loggedIn', false)
     const $snotify = this.$auth.ctx.app.$snotify
     $snotify.clear()
+    if (!reason) return
     $snotify.info(`You've been logged out. (${reason})`, 'Logged Out', {
       progress: false,
       timeout: accessTimeout
@@ -59,28 +62,29 @@ export default class GraphQLScheme {
 
     const apollo = this.$auth.ctx.app.apolloProvider.defaultClient
 
-    // don't trap errors here, they will be thrown to the component
-    const { data: { tokens } } = await apollo.mutate({
+    const { data, errors } = await apollo.mutate({
       mutation: this.gql.UserLoginM,
       variables
     })
-    // debugger
-
-    this._setTokens(tokens)
-
+    if (errors) throw new Error(errors)
+    this._setTokens(data.tokens)
     return this.fetchUser()
   }
 
   async refresh () {
     const apollo = this.$auth.ctx.app.apolloProvider.defaultClient
     const refreshToken = this.$storage.getLocalStorage('refreshToken')
-    // don't trap errors here, they will be thrown to the component
-    const { data: { tokens } } = await apollo.mutate({
+    const { data, errors } = await apollo.mutate({
       mutation: this.gql.UserRefreshM,
-      variables: { refreshToken }
+      variables: { refreshToken },
+      // although errorPolicy: 'all' is set in defaultConfig, that doesn't
+      // seem to be applied to defaultClient ?!
+      errorPolicy: 'all'
     })
+    if (errors) return { errors }
 
-    this._setTokens(tokens)
+    this._setTokens(data.tokens)
+    return {}
   }
 
   async fetchUser (endpoint) {
@@ -88,9 +92,9 @@ export default class GraphQLScheme {
       return
     }
     const apollo = this.$auth.ctx.app.apolloProvider.defaultClient
-    // don't trap errors here, they will be thrown to the component
     const user = await apollo.query({
-      query: this.gql.UserQ
+      query: this.gql.UserQ,
+      errorPolicy: 'all'
     })
 
     this.$storage.setState('user', user)

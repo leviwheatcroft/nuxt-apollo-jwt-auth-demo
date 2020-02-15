@@ -1,10 +1,14 @@
 ## Nuxt Apollo GraphQL JWT Auth Demo
 
+### Overview
+
 After spending days tripping over Auth & JWT I thought I'd make a demo / sandbox to make it easier to try out different things.
 
  - Check it out on [codesandbox.io]()
  - @levi on the [nuxt discord](https://discord.nuxtjs.org/)
  - post an issue on [github]()
+
+Log in and fire off a few queries to watch the JWT refresh magic.
 
 This repo is focused on the mechanics of Apollo & JWT Auth, so there's no database or user management going on.
 
@@ -34,7 +38,7 @@ Servers typically issue an `accessToken` which establishes authorisations for a 
 
 ## Login
 
-Usually you'd need to provide a username and password, but we're not concerned with anything so pedestrian. We simply issue a LoginMutation and the server happily issues us an `accessToken` & `requestToken`.
+We issue a Login Mutation and the server issues an `accessToken` & `requestToken`.
 
 The client stores these tokens for later user. Presently this repo uses local storage. If you need SSR then you'll need to look into using cookies instead so the server has the tokens when it's trying to render. The auth module's `local` scheme demonstrates how to store the tokens as cookies.
 
@@ -48,7 +52,30 @@ The nuxt apollo module will attach the `accessToken` to any queries or mutations
 
 Server middleware checks whether the `accessToken` has expired. If it hasn't, the request is served and nothing additional happens with tokens during this request.
 
-If the token has expired, we issue an `AUTH_EXPIRED` error, and something terrible and awesome ensues. The custom `refreshTokenLink` intercepts the error, requests new tokens using the `refreshToken`, and then re-issues the original request. This might seem like a simple idea, but apollo links are inscrutable, esoteric, and arcane.
+If the token has expired, we issue an `AUTH_ACCESS_TIMEOUT` error, and something terrible and awesome ensues. The custom Apollo Link intercepts the error, requests new tokens using the `refreshToken`, and then re-issues the original request. This might seem like a simple idea, but apollo links are inscrutable, esoteric, and arcane.
 
 ## Logout
 Not much to see here. We don't even bother to tell the server, just delete the tokens from local storage and go about your day.
+
+## Error Handling
+
+Error management in apollo [is a little unusual](https://www.apollographql.com/docs/react/data/error-handling/). Basically, by setting `errorPolicy: 'all'` on our queries, apollo will return an errors property as part of the response instead of throwing an error. The handlers defined in `plugins/apollo/apolloConfig.js` can direct the user to log in or whatever, but you still need a graceful resolution to the action that made the client realise it was logged out. In practice, this just means being aware that the `data` property of a response will be null (and there will be an errors property) when a user has been logged out.
+
+For example, destructuring your response like this will throw an error if `data` is `null`.
+
+```
+async issueSomeQuery () {
+  const {
+    data: {
+      someQuery: { someProperty }
+    }
+  } = await this.$apollo.query({
+    query: SomeQuery,
+    fetchPolicy: 'network-only'
+  })
+}
+```
+
+see also:
+
+ - [full stack error handling with graphql apollo](https://blog.apollographql.com/full-stack-error-handling-with-graphql-apollo-5c12da407210)
