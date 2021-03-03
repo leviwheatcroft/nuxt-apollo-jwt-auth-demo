@@ -26,7 +26,7 @@
     "jsonwebtoken": "^8.5.1",
     "marked": "^0.8.0",
     "nuxt": "^2.0.0",
-    "pug": "^2.0.4",
+    "pug": "^3.0.1",
     "pug-plain-loader": "^1.0.0",
     "vue-snotify": "^3.2.1"
   },
