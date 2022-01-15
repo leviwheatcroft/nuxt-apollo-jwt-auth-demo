@@ -24,7 +24,7 @@
     "graphql-middleware": "^4.0.2",
     "graphql-tools": "^4.0.6",
     "jsonwebtoken": "^8.5.1",
-    "marked": "^0.8.0",
+    "marked": "^4.0.10",
     "nuxt": "^2.0.0",
     "pug": "^2.0.4",
     "pug-plain-loader": "^1.0.0",
